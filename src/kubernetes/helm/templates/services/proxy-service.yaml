@@ -25,7 +25,44 @@ spec:
     spec:
       containers:
       - name: proxy-service
-        ..... тут
+        image: ghcr.io/{{ .Values.global.githubUser }}/proxy-service:{{ .Values.proxyService.image.tag }} # Замените на правильный формат тега
+        imagePullPolicy: {{ .Values.proxyService.image.pullPolicy }}
+        ports:
+        - containerPort: {{ .Values.proxyService.service.targetPort }}
+        env:
+        - name: PORT
+          value: "{{ .Values.proxyService.service.targetPort }}"
+        # --- Добавляем переменные окружения для прокси ---
+        - name: MONOLITH_URL
+          value: "http://monolith-service:8080" # Убедитесь, что имя сервиса монолита правильное
+        - name: MOVIES_SERVICE_URL
+          value: "http://movies-service:8081" # Убедитесь, что имя сервиса movies правильное
+        - name: EVENTS_SERVICE_URL
+          value: "http://events-service:8082" # Имя сервиса events
+        - name: GRADUAL_MIGRATION
+          value: "true" # Можно взять из ConfigMap, если нужно
+        - name: MOVIES_MIGRATION_PERCENT
+          value: "50" # Можно взять из ConfigMap
+        envFrom: # Загружаем переменные из ConfigMap
+        - configMapRef:
+            name: cinemaabyss-config
+        resources:
+          {{- toYaml .Values.proxyService.resources | nindent 10 }}
+        readinessProbe:
+          httpGet:
+            path: /health # Путь к health-эндпоинту вашего прокси
+            port: {{ .Values.proxyService.service.targetPort }}
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /health # Путь к health-эндпоинту вашего прокси
+            port: {{ .Values.proxyService.service.targetPort }}
+          initialDelaySeconds: 15
+          periodSeconds: 20
+      restartPolicy: Always
+      imagePullSecrets: # Если используете приватный репозиторий
+      - name: dockerconfigjson
 ---
 apiVersion: v1
 kind: Service
@@ -38,5 +75,9 @@ metadata:
     app.kubernetes.io/instance: {{ .Release.Name }}
 spec:
   selector:
-    ... и тут
+    app: proxy-service
+  ports:
+  - port: {{ .Values.proxyService.service.port }}
+    targetPort: {{ .Values.proxyService.service.targetPort }}
+  type: {{ .Values.proxyService.service.type }}
 {{- end }}
