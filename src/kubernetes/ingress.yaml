@@ -1,22 +1,47 @@
+#apiVersion: networking.k8s.io/v1
+#kind: Ingress
+#metadata:
+#  name: cinemaabyss-ingress
+#  namespace: cinemaabyss
+#  annotations:
+#    kubernetes.io/ingress.class: "nginx"
+#    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+#spec:
+#  rules:
+#    - host: cinemaabyss.example.com
+#      http:
+#        paths:
+#          #дополните конфигурацию для /
+#          ...
+#          - path: /api/events
+#            pathType: Prefix
+#            backend:
+#              service:
+#                name: events-service
+#                port:
+#                  number: 8082
+
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: cinemaabyss-ingress
   namespace: cinemaabyss
   annotations:
-    kubernetes.io/ingress.class: "nginx"
+    # Убедитесь, что у вас установлен Nginx Ingress Controller,
+    # иначе эти аннотации могут быть неактуальны
+    kubernetes.io/ingress.class: "nginx" 
     nginx.ingress.kubernetes.io/ssl-redirect: "false"
 spec:
   rules:
-    - host: cinemaabyss.example.com
-      http:
-        paths:
-          #дополните конфигурацию для /
-          ...
-          - path: /api/events
-            pathType: Prefix
-            backend:
-              service:
-                name: events-service
-                port:
-                  number: 8082
+  - host: cinemaabyss.local  # Или cinemaabyss.example.com, если вы его настроили
+    http:
+      paths:
+      #весь трафик идет на ПРОКСИ-СЕРВИС
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: proxy-service # Направляем ВСЁ на прокси
+            port:
+              number: 80
+
