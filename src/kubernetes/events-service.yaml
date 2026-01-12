@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: events-service
-        image: ghcr.io/<AliaBis>/events-service:latest
+        image: ghcr.io/<aliabis>/events-service:latest
         ports:
         - containerPort: 8082
         envFrom: # <-- Добавьте эту секцию

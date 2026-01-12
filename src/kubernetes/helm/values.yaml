@@ -54,7 +54,7 @@ proxyService:
   enabled: true
   image:
     #repository: ghcr.io/db-exp/cinemaabysstest/proxy-service
-    repository: ghcr.io/AliaBis/cinemaabysstest/proxy-service
+    repository: ghcr.io/aliabis/cinemaabysstest/proxy-service
     tag: latest
     pullPolicy: Always
   replicas: 1
@@ -95,7 +95,7 @@ eventsService:
   enabled: true
   image:
     #repository: ghcr.io/db-exp/cinemaabysstest/events-service
-    repository: ghcr.io/AliaBis/cinemaabysstest/events-service
+    repository: ghcr.io/aliabis/cinemaabysstest/events-service
     tag: latest
     pullPolicy: Always
   replicas: 1

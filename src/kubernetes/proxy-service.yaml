@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: proxy-service
-        image: ghcr.io/<AliaBis>/proxy-service:latest
+        image: ghcr.io/<aliabis>/proxy-service:latest
         ports:
         - containerPort: 8000
         envFrom: # <-- Добавьте эту секцию
