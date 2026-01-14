@@ -25,17 +25,16 @@ spec:
     spec:
       containers:
       - name: events-service
-        image: ghcr.io/{{ .Values.global.githubUser }}/events-service:{{ .Values.eventsService.image.tag }} # Замените на правильный формат тега
+        image: ghcr.io/aliabis/architecture-cinemaabyss/events-service:latest
         imagePullPolicy: {{ .Values.eventsService.image.pullPolicy }}
         ports:
         - containerPort: {{ .Values.eventsService.service.targetPort }}
         env:
         - name: PORT
           value: "{{ .Values.eventsService.service.targetPort }}"
-        # --- Добавляем переменные окружения ---
-        - name: KAFKA_BROKERS
-          value: "kafka:9092" # Имя сервиса Kafka внутри кластера
-        envFrom: # Загружаем переменные из ConfigMap
+        #- name: KAFKA_BROKERS
+        #  value: "kafka:9092" # Имя сервиса Kafka внутри кластера
+        envFrom:
         - configMapRef:
             name: cinemaabyss-config
         resources:

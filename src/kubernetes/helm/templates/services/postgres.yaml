@@ -20,7 +20,8 @@ spec:
     spec:
       containers:
       - name: postgres
-        image: {{ .Values.database.image.repository }}:{{ .Values.database.image.tag }}
+        #image: ghcr.io/aliabis/architecture-cinemaabyss/postgres:latest
+        image: ghcr.io/aliabis/architecture-cinemaabyss/postgres:14
         imagePullPolicy: {{ .Values.database.image.pullPolicy }}
         ports:
         - containerPort: 5432

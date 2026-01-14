@@ -25,7 +25,7 @@ spec:
     spec:
       containers:
       - name: proxy-service
-        image: ghcr.io/{{ .Values.global.githubUser }}/proxy-service:{{ .Values.proxyService.image.tag }} # Замените на правильный формат тега
+        image: ghcr.io/aliabis/architecture-cinemaabyss/proxy-service:latest # Замените на правильный формат тега
         imagePullPolicy: {{ .Values.proxyService.image.pullPolicy }}
         ports:
         - containerPort: {{ .Values.proxyService.service.targetPort }}
@@ -34,7 +34,7 @@ spec:
           value: "{{ .Values.proxyService.service.targetPort }}"
         # --- Добавляем переменные окружения для прокси ---
         - name: MONOLITH_URL
-          value: "http://monolith-service:8080" # Убедитесь, что имя сервиса монолита правильное
+          value: "http://monolith:8080" # Убедитесь, что имя сервиса монолита правильное
         - name: MOVIES_SERVICE_URL
           value: "http://movies-service:8081" # Убедитесь, что имя сервиса movies правильное
         - name: EVENTS_SERVICE_URL
