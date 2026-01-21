@@ -1,9 +1,9 @@
-@startuml с4_advanced
+@startuml с4
 !include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
 
 LAYOUT_WITH_LEGEND()
 
-Person(user, "Пользователь", "Пользователь системы CinemaAbyss")
+Person(user, "Пользователь", "Зритель системы CinemaAbyss")
 
 System_Boundary(cinema_abyss, "Система CinemaAbyss") {
     
