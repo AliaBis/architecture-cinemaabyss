@@ -1,33 +1,60 @@
 @startuml с4
 !include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
 
-Person(user, "Пользователь", "Пользователь системы CinemaAbyss")
+LAYOUT_WITH_LEGEND()
+
+Person(user, "Пользователь", "Зритель системы CinemaAbyss")
 
 System_Boundary(cinema_abyss, "Система CinemaAbyss") {
-    Container(api_gateway, "API-шлюз", "HTTP Server", "Единая точка входа для всех внешних запросов, маршрутизирует их в соответствующие микросервисы")
+    
+    Container(api_gateway, "API Gateway", "Go / Nginx", "Единый вход, Rate Limiting, CORS, Маршрутизация")
+    
+    Container(auth_service, "Identity Service", "Keycloak / Custom", "Аутентификация, авторизация (JWT), управление ролями")
 
-    Container(user_service, "Сервис пользователей", "Управляет жизненным циклом пользователей")
+    Container(user_service, "User Service", "Node.js", "Управление профилями, настройками пользователей")
+    ContainerDb(user_db, "User DB", "PostgreSQL", "Данные пользователей")
 
-    Container(movie_service, "Сервис фильмов", "Управляет каталогом фильмов")
+    Container(movie_service, "Movie Service", "Python/Go", "Каталог фильмов, метаданные")
+    ContainerDb(movie_db, "Movie DB", "PostgreSQL", "Метаданные фильмов")
 
-    Container(payment_service, "Сервис платежей", "Обработка платежей пользователей")
+    Container(payment_service, "Payment Service", "Java / Spring", "Обработка транзакций")
+    ContainerDb(payment_db, "Payment DB", "PostgreSQL", "История платежей")
 
-    Container(subscription_service, "Сервис подписок", "Управление подписками пользователей")
+    Container(subscription_service, "Subscription Service", "Node.js", "Управление подписками и доступом")
+    ContainerDb(sub_db, "Subscription DB", "MongoDB / Redis", "Состояния подписок")
 
-    ContainerDb(shared_db, "Общая база данных", "PostgreSQL", "БД для всех доменов(польз., фильмы, платежи, подписки)")
+    Container(message_broker, "Message Broker", "Kafka", "Шина событий (События: PaymentProcessed, MovieUploaded, UserRegistered)")
+
+    Container(s3, "Object Storage", "AWS S3 / MinIO", "Хранение видео, постеров, аватарок")
 }
 
-Rel(user, api_gateway, "Взаимодействие через веб/мобильное приложение", "HTTPS/JSON")
+System_Ext(payment_gateway, "Payment Gateway", "Stripe / PayPal API", "Внешний процессинг платежей")
 
-Rel(api_gateway, user_service, "Маршрутизирует запросы в", "HTTP/JSON")
-Rel(api_gateway, movie_service, "Маршрутизирует запросы в", "HTTP/JSON")
-Rel(api_gateway, payment_service, "Маршрутизирует запросы в", "HTTP/JSON")
-Rel(api_gateway, subscription_service, "Маршрутизирует запросы в", "HTTP/JSON")
+' Связи
+Rel(user, api_gateway, "Использует", "HTTPS/JSON")
 
-Rel(user_service, shared_db, "Чтение/Запись", "SQL")
-Rel(movie_service, shared_db, "Чтение/Запись", "SQL")
-Rel(payment_service, shared_db, "Чтение/Запись", "SQL")
-Rel(subscription_service, shared_db, "Чтение/Запись", "SQL")
+Rel(api_gateway, auth_service, "Проверяет токен / Логин", "HTTP/OIDC")
+Rel(api_gateway, user_service, "Запросы профиля", "gRPC/HTTP")
+Rel(api_gateway, movie_service, "Каталог фильмов", "gRPC/HTTP")
+Rel(api_gateway, payment_service, "Оплата", "gRPC/HTTP")
+Rel(api_gateway, subscription_service, "Статус подписки", "gRPC/HTTP")
 
-LAYOUT_WITH_LEGEND()
+' Работа с БД
+Rel(user_service, user_db, "SQL")
+Rel(movie_service, movie_db, "SQL")
+Rel(payment_service, payment_db, "SQL")
+Rel(subscription_service, sub_db, "NoSQL")
+
+' Работа с S3
+Rel(movie_service, s3, "Загружает контент / Ссылка на постеры", "S3 API")
+Rel(user_service, s3, "Загружает аватарки", "S3 API")
+
+' Асинхронное взаимодействие (Kafka)
+Rel(payment_service, message_broker, "Публикует 'PaymentSucceeded'", "Async/Avro")
+Rel(message_broker, subscription_service, "Слушает события оплаты", "Async/Avro")
+Rel(message_broker, user_service, "Слушает события для уведомлений", "Async/Avro")
+
+' Внешние системы
+Rel(payment_service, payment_gateway, "Инициирует транзакцию", "HTTPS/REST")
+
 @enduml

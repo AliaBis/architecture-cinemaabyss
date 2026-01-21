@@ -94,7 +94,7 @@ spec:
       - name: zookeeper-data
         persistentVolumeClaim:
           claimName: zookeeper-data
-      {{- else }}
+            {{- else }}
       volumes:
       - name: zookeeper-data
         emptyDir: {}
@@ -164,20 +164,22 @@ spec:
         resources:
           {{- toYaml .Values.kafka.resources | nindent 10 }}
         env:
+        # Важно: Используем имя сервиса Kafka для внутреннего соединения
         - name: KAFKA_ADVERTISED_LISTENERS
-          value: PLAINTEXT://kafka:9092
+          value: PLAINTEXT://kafka:9092 
         - name: KAFKA_LISTENERS
           value: PLAINTEXT://0.0.0.0:9092
         - name: KAFKA_PORT
           value: "9092"
         - name: KAFKA_ZOOKEEPER_CONNECT
           value: zookeeper:2181
+        # Определяем топики, которые должны быть созданы
         - name: KAFKA_CREATE_TOPICS
-          value: "{{ range $i, $topic := .Values.kafka.topics }}{{ if $i }},{{ end }}{{ $topic.name }}:{{ $topic.partitions }}:{{ $topic.replicationFactor }}{{ end }}"
+          value: "movie-events:1:1,user-events:1:1,payment-events:1:1" # Ваши топики
         - name: KAFKA_AUTO_CREATE_TOPICS_ENABLE
-          value: "true"
+          value: "false" # Лучше явно указывать топики, чем разрешать автосоздание
         - name: KAFKA_BROKER_ID
-          value: "1"
+          value: "0" # Для StatefulSet ID должен быть уникальным, 0 для первой реплики
         - name: KAFKA_LOG_DIRS
           value: "/kafka/kafka-logs"
         volumeMounts:
@@ -204,3 +206,4 @@ spec:
         emptyDir: {}
       {{- end }}
 {{- end }}
+

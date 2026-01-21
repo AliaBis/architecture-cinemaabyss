@@ -20,14 +20,13 @@ spec:
   - host: {{ .host }}
     http:
       paths:
-      {{- range .paths }}
-      - path: {{ .path }}
-        pathType: {{ .pathType }}
+      #весь трафик направляется на proxy-service
+      - path: /
+        pathType: Prefix
         backend:
           service:
-            name: {{ .service }}
+            name: proxy-service #имя proxy-service
             port:
-              number: {{ .port }}
-      {{- end }}
+              number: 80 # порт,на котором слушает Service proxy-service
   {{- end }}
 {{- end }}
